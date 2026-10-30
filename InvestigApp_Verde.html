@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvestigApp Verde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+:root{
+  --v900:#173d2a; --v800:#1f5137; --v700:#2a6b48; --v600:#33845a; --v500:#43a06e; --v400:#6dbb8d; --v300:#a5d8b8; --v200:#cdebd8; --v100:#e6f4ea; --v50:#f3faf5;
+  --bg:#eef5ef; --card:#ffffff; --text:#1d2b23; --muted:#5d6f64; --border:#d6e5da;
+  --amber:#b9761c; --amber-bg:#fdf3e1; --rojo:#b8443a; --rojo-bg:#fbe9e6;
+  --radius:18px; --shadow:0 10px 28px -14px rgba(23,61,42,.28);
+  --font:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;display:flex;flex-direction:column;min-height:100vh;font-size:15.5px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--v400);outline-offset:2px}
+
+/* ---------- Encabezado ---------- */
+header{background:linear-gradient(120deg,var(--v800) 0%,var(--v600) 60%,var(--v500) 100%);color:#fff;padding:.8rem 1.5rem;display:flex;gap:1rem;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:0 6px 20px -8px rgba(23,61,42,.5)}
+.brand{display:flex;align-items:center;gap:.8rem;min-width:0}
+.logo{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.brand-title{font-weight:800;font-size:1.25rem;letter-spacing:-.3px;line-height:1.1}
+.brand-sub{display:flex;align-items:center;gap:.6rem;font-size:.78rem;opacity:.95;margin-top:.2rem}
+.pbar{width:120px;height:8px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.pbar>div{height:100%;width:0;background:#d4f5c4;border-radius:99px;transition:width .5s}
+.save-state{font-size:.75rem;padding:.15rem .55rem;border-radius:99px;background:rgba(255,255,255,.15);white-space:nowrap}
+.head-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.hbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:99px;padding:.5rem .95rem;font-weight:700;font-size:.85rem;cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;transition:background .2s}
+.hbtn:hover{background:rgba(255,255,255,.26)}
+.hbtn.solid{background:#fff;color:var(--v800);border-color:#fff}
+.hbtn.solid:hover{background:var(--v50)}
+.menu-toggle{display:none}
+.dropdown{position:relative}
+.dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;color:var(--text);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);min-width:220px;padding:.4rem;z-index:60}
+.dropdown.open .dropdown-menu{display:block}
+.dropdown-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:.6rem .8rem;border-radius:10px;cursor:pointer;font-weight:600}
+.dropdown-menu button:hover{background:var(--v100);color:var(--v800)}
+
+/* ---------- Disposición ---------- */
+.app{display:flex;flex:1;min-height:0}
+aside{width:290px;background:var(--card);border-right:1px solid var(--border);padding:1.2rem .9rem 2rem;overflow-y:auto;flex-shrink:0}
+.floor{margin-bottom:1.1rem}
+.floor-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:800;padding:.3rem .75rem}
+.nav-btn{width:100%;display:flex;align-items:center;gap:.6rem;text-align:left;background:none;border:none;border-radius:12px;padding:.6rem .8rem;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--text);transition:background .15s}
+.nav-btn:hover{background:var(--v50);color:var(--v700)}
+.nav-btn.active{background:var(--v100);color:var(--v800);font-weight:800}
+.nav-btn .dot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:var(--border);flex-shrink:0}
+.nav-btn .dot.ok{background:var(--v500)}
+.nav-btn .num{font-size:.75rem;color:var(--muted);font-weight:700;min-width:1.7rem}
+main{flex:1;padding:2rem 2rem 4rem;overflow-y:auto;min-width:0}
+.room{display:none;max-width:980px;margin:0 auto;animation:fade .3s ease}
+.room.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem;box-shadow:var(--shadow);margin-bottom:1.3rem}
+.room-head{margin-bottom:1.4rem}
+.room-num{display:inline-block;background:var(--v100);color:var(--v700);font-weight:800;font-size:.75rem;padding:.15rem .6rem;border-radius:99px;margin-bottom:.4rem}
+.room-head h2{font-size:1.55rem;color:var(--v900);letter-spacing:-.3px;line-height:1.25}
+.room-head p{color:var(--muted);margin-top:.35rem}
+h3{color:var(--v800);font-size:1.05rem;margin-bottom:.5rem}
+.muted{color:var(--muted);font-size:.9rem}
+.tip{background:var(--v50);border:1px solid var(--v200);border-left:5px solid var(--v500);border-radius:12px;padding:.8rem 1rem;margin-bottom:1.2rem;font-size:.92rem}
+.warn{background:var(--amber-bg);border:1px solid #f1d6a6;border-left:5px solid var(--amber);border-radius:12px;padding:.8rem 1rem;font-size:.9rem;margin:.8rem 0}
+
+/* ---------- Campos ---------- */
+.field-block{margin-bottom:1.6rem}
+.field-block>label,.lbl{display:block;font-weight:800;color:var(--v900);margin-bottom:.35rem}
+.help{display:block;color:var(--muted);font-size:.85rem;margin:-.2rem 0 .45rem}
+input[type=text],input[type=password],input[type=url],input[type=number],input:not([type]),textarea,select{width:100%;padding:.8rem 1rem;border:2px solid var(--border);border-radius:14px;background:var(--v50);transition:border .2s,background .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--v500);background:#fff;box-shadow:0 0 0 4px rgba(67,160,110,.15)}
+textarea{min-height:170px;resize:vertical;line-height:1.65}
+textarea.short{min-height:90px}
+.field-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;margin-top:.55rem;flex-wrap:wrap}
+.ai-tools{display:flex;gap:.45rem;flex-wrap:wrap}
+.counter{font-size:.8rem;color:var(--muted);font-weight:700;white-space:nowrap;padding-top:.4rem}
+.counter.over{color:var(--rojo)}
+
+/* ---------- Botones ---------- */
+.btn{cursor:pointer;border:none;border-radius:99px;padding:.6rem 1.1rem;font-weight:700;font-size:.87rem;display:inline-flex;align-items:center;gap:.4rem;transition:transform .15s,background .2s,box-shadow .2s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.btn-primary{background:var(--v600);color:#fff;box-shadow:0 4px 12px -6px rgba(51,132,90,.8)}
+.btn-primary:hover{background:var(--v700)}
+.btn-ai{background:linear-gradient(120deg,var(--v600),var(--v500));color:#fff;box-shadow:0 4px 12px -6px rgba(51,132,90,.8)}
+.btn-soft{background:var(--v100);color:var(--v800)}
+.btn-soft:hover{background:var(--v200)}
+.btn-ghost{background:transparent;color:var(--v700);border:2px solid var(--v200)}
+.btn-ghost:hover{background:var(--v50)}
+.btn-danger{background:var(--rojo-bg);color:var(--rojo)}
+.btn-sm{padding:.35rem .75rem;font-size:.78rem}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
+.btn-soft .spin,.btn-ghost .spin{border-color:var(--v300);border-top-color:var(--v700)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- Inicio ---------- */
+.hero{background:linear-gradient(135deg,var(--v100),#fff 70%);border:1px solid var(--v200);border-radius:24px;padding:2rem;margin-bottom:1.3rem;position:relative;overflow:hidden}
+.hero h2{font-size:1.8rem;color:var(--v900);line-height:1.2}
+.hero p{color:var(--muted);max-width:640px;margin-top:.5rem}
+.hero .leaf{position:absolute;right:-20px;top:-20px;font-size:9rem;opacity:.12;transform:rotate(20deg)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.4rem}
+.step{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1rem 1.1rem;cursor:pointer;transition:transform .15s,border .15s}
+.step:hover{transform:translateY(-2px);border-color:var(--v400)}
+.step b{display:block;color:var(--v800);margin:.2rem 0}
+.step span{font-size:.86rem;color:var(--muted)}
+.step .n{width:30px;height:30px;border-radius:10px;background:var(--v600);color:#fff;display:grid;place-items:center;font-weight:800}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
+.status-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:12px;background:var(--v50);border:1px solid var(--border);cursor:pointer;font-weight:600;font-size:.9rem}
+.status-item:hover{border-color:var(--v400)}
+.status-item .ic{font-size:1rem}
+
+/* ---------- Fuentes ---------- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.drop{border:2.5px dashed var(--v400);border-radius:16px;padding:1.6rem 1rem;text-align:center;background:var(--v50);cursor:pointer;transition:background .2s}
+.drop:hover,.drop.over{background:var(--v100)}
+.drop b{color:var(--v700)}
+.stack{display:flex;flex-direction:column;gap:.6rem}
+.src-toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chip{border:2px solid var(--v200);background:#fff;border-radius:99px;padding:.3rem .8rem;font-weight:700;font-size:.8rem;cursor:pointer;color:var(--v800)}
+.chip.on{background:var(--v600);border-color:var(--v600);color:#fff}
+.src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem}
+.src{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.45rem;transition:opacity .2s}
+.src.off{opacity:.55}
+.src h4{font-size:.95rem;color:var(--v900);line-height:1.35;word-break:break-word}
+.badge{display:inline-block;font-size:.7rem;font-weight:800;padding:.12rem .55rem;border-radius:99px;background:var(--v100);color:var(--v700);margin-right:.25rem}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.src .meta{font-size:.8rem;color:var(--muted)}
+.src .note{font-size:.8rem;color:var(--amber);background:var(--amber-bg);padding:.35rem .6rem;border-radius:8px}
+.src-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:auto;align-items:center}
+.switch{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700;color:var(--v800);cursor:pointer;margin-right:auto}
+.switch input{width:auto;accent-color:var(--v600);transform:scale(1.15)}
+.empty{text-align:center;padding:2rem;color:var(--muted);background:var(--v50);border-radius:16px;border:1px dashed var(--v300)}
+
+/* ---------- Búsqueda académica ---------- */
+.search-row{display:grid;grid-template-columns:1fr 170px 110px auto;gap:.6rem;align-items:center}
+.oa-list{display:flex;flex-direction:column;gap:.8rem;margin-top:1rem}
+.oa-item{border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;background:var(--v50)}
+.oa-item h4{font-size:.95rem;color:var(--v900);line-height:1.35}
+.oa-item .meta{font-size:.8rem;color:var(--muted);margin:.2rem 0 .4rem}
+.oa-item p{font-size:.85rem;color:#33443a}
+.oa-item .row{display:flex;gap:.5rem;margin-top:.6rem;flex-wrap:wrap}
+
+/* ---------- Cronograma ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px}
+table.crono{border-collapse:collapse;width:100%;min-width:640px;font-size:.88rem}
+.crono th{background:var(--v100);color:var(--v800);font-weight:800;padding:.6rem .5rem;text-align:center;border-bottom:1px solid var(--border)}
+.crono th.l{text-align:left}
+.crono td{border-bottom:1px solid var(--border);padding:.35rem .4rem;text-align:center}
+.crono td input[type=text]{padding:.45rem .6rem;border-radius:10px;font-size:.86rem}
+.crono td.m{width:44px}
+.mcell{width:30px;height:30px;border-radius:9px;border:2px solid var(--v200);background:#fff;cursor:pointer}
+.mcell.on{background:var(--v500);border-color:var(--v500)}
+.row-tools{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin:1rem 0}
+.row-tools select{width:auto}
+
+/* ---------- Revisión ---------- */
+.checks{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.checks li{padding:.55rem .8rem;border-radius:10px;background:var(--v50);font-size:.9rem}
+.checks li.w{background:var(--amber-bg)}
+.review-out{white-space:pre-wrap;background:var(--v50);border:1px solid var(--border);border-radius:14px;padding:1.1rem;font-size:.92rem;margin-top:1rem}
+
+/* ---------- Modales ---------- */
+.modal{display:none;position:fixed;inset:0;background:rgba(23,40,30,.55);backdrop-filter:blur(3px);z-index:100;justify-content:center;align-items:center;padding:1.2rem}
+.modal.active{display:flex}
+.modal-box{background:#fff;border-radius:22px;width:100%;max-width:820px;max-height:90vh;overflow-y:auto;padding:1.8rem;box-shadow:0 30px 60px -20px rgba(0,0,0,.35)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.modal-head h3{margin:0;font-size:1.2rem}
+.modal-foot{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;margin-top:1rem}
+.result-meta{font-size:.8rem;color:var(--muted);margin-bottom:.6rem}
+#ai-result{min-height:320px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.form-grid .full{grid-column:1/-1}
+.snap{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.7rem .9rem;border:1px solid var(--border);border-radius:12px;margin-bottom:.5rem;flex-wrap:wrap}
+.snap b{color:var(--v800)}
+
+/* ---------- Documento ---------- */
+.doc{font-family:'Lora','Times New Roman',serif;color:#111;line-height:1.85;font-size:11.5pt;background:#fff}
+.doc h1{font-size:15pt;text-align:center;margin:0 0 1.6rem;text-transform:uppercase;line-height:1.4}
+.doc h2{font-size:12.5pt;margin:1.5rem 0 .5rem;border-bottom:1px solid #cbd8cf;padding-bottom:.2rem;color:#1f3a2b}
+.doc h3{font-size:11.5pt;margin:1rem 0 .3rem;color:#1f3a2b}
+.doc p{text-align:justify;margin-bottom:.8rem}
+.doc .ref{padding-left:1.27cm;text-indent:-1.27cm;margin-bottom:.45rem;text-align:left}
+.doc table{border-collapse:collapse;width:100%;font-size:9.5pt;margin:.5rem 0 1rem}
+.doc th,.doc td{border:1px solid #9fb3a6;padding:.25rem .35rem;text-align:center}
+.doc td.l,.doc th.l{text-align:left}
+.doc td.x{background:#7fbf97}
+.doc .verif{background:#ffe9a8;padding:0 2px;border-radius:3px}
+.doc .vacio{color:#999;font-style:italic}
+
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--v800);color:#fff;padding:.8rem 1.4rem;border-radius:99px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transition:all .3s;pointer-events:none;z-index:200;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.scrim{display:none}
+
+/* ---------- Responsivo ---------- */
+@media (max-width:900px){
+  header{padding:.7rem 1rem}
+  .menu-toggle{display:inline-flex}
+  .hbtn .t{display:none}
+  .brand-sub .pbar{width:70px}
+  aside{position:fixed;top:0;left:0;bottom:0;z-index:90;transform:translateX(-105%);transition:transform .25s;box-shadow:var(--shadow)}
+  aside.open{transform:none}
+  .scrim.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:80}
+  main{padding:1.2rem 1rem 4rem}
+  .card{padding:1.2rem}
+  .grid2,.form-grid{grid-template-columns:1fr}
+  .search-row{grid-template-columns:1fr 1fr}
+  .search-row input#oa-q{grid-column:1/-1}
+  .modal-box{padding:1.2rem}
+}
+@media print{
+  body>*:not(#m-preview){display:none!important}
+  #m-preview{display:block!important;position:static;background:none;padding:0}
+  #m-preview .modal-box{box-shadow:none;max-height:none;overflow:visible;padding:0;max-width:none}
+  .no-print{display:none!important}
+  .doc .verif{background:#ffe9a8}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <button class="hbtn menu-toggle" id="menu-toggle" aria-label="Abrir menú">☰</button>
+    <div class="logo">🌿</div>
+    <div>
+      <div class="brand-title">InvestigApp</div>
+      <div class="brand-sub">
+        <span>Avance <b id="p-text">0%</b></span>
+        <div class="pbar"><div id="p-bar"></div></div>
+        <span class="save-state" id="save-state">✓ Guardado</span>
+      </div>
+    </div>
+  </div>
+  <div class="head-actions">
+    <button class="hbtn solid" id="btn-preview">📄 <span class="t">Ver documento</span></button>
+    <button class="hbtn" id="btn-snaps">🕘 <span class="t">Versiones</span></button>
+    <div class="dropdown" id="dd-file">
+      <button class="hbtn" id="btn-dd">📁 <span class="t">Archivo</span> ▾</button>
+      <div class="dropdown-menu">
+        <button data-file="word">📝 Exportar a Word</button>
+        <button data-file="print">🖨️ Imprimir o guardar PDF</button>
+        <button data-file="json">⬇️ Exportar proyecto (respaldo)</button>
+        <button data-file="import">⬆️ Importar proyecto</button>
+      </div>
+    </div>
+    <input type="file" id="import-input" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="scrim" id="scrim"></div>
+  <main id="main"></main>
+</div>
+
+<!-- Resultado IA -->
+<div class="modal" id="m-ai">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="ai-title">Propuesta de la IA</h3><button class="btn btn-ghost btn-sm" data-close="m-ai">✕ Cerrar</button></div>
+    <div class="result-meta" id="ai-meta"></div>
+    <div id="ai-hint"></div>
+    <textarea id="ai-result"></textarea>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="m-ai">Descartar</button>
+      <button class="btn btn-soft" id="ai-copy">📋 Copiar</button>
+      <button class="btn btn-soft" id="ai-append">➕ Agregar al final</button>
+      <button class="btn btn-primary" id="ai-replace">✔ Reemplazar mi texto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vista previa -->
+<div class="modal" id="m-preview">
+  <div class="modal-box" style="max-width:900px">
+    <div class="modal-head no-print">
+      <h3>📄 Vista previa del protocolo</h3>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-soft btn-sm" id="pv-word">📝 Word</button>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-ghost btn-sm" data-close="m-preview">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="tip no-print" id="pv-tip" style="display:none"></div>
+    <div id="doc" class="doc"></div>
+  </div>
+</div>
+
+<!-- Versiones -->
+<div class="modal" id="m-snaps">
+  <div class="modal-box" style="max-width:640px">
+    <div class="modal-head"><h3>🕘 Versiones guardadas</h3><button class="btn btn-ghost btn-sm" data-close="m-snaps">✕ Cerrar</button></div>
+    <p class="muted" style="margin-bottom:.8rem">Guarda una copia de cómo va tu protocolo para poder volver a ella. Se conservan las 15 más recientes en este navegador.</p>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem"><input type="text" id="snap-name" placeholder="Nombre de la versión (opcional), ej: Antes de revisión del tutor"><button class="btn btn-primary" id="snap-save">Guardar</button></div>
+    <div id="snap-list"></div>
+  </div>
+</div>
+
+<!-- Editar fuente -->
+<div class="modal" id="m-src">
+  <div class="modal-box">
+    <div class="modal-head"><h3>📚 Datos de la fuente</h3><button class="btn btn-ghost btn-sm" data-close="m-src">✕ Cerrar</button></div>
+    <div id="src-preview"></div>
+    <div class="form-grid">
+      <div class="full"><label class="lbl">Título</label><input type="text" id="se-title"></div>
+      <div class="full"><label class="lbl">Autores</label><small class="help">Uno por línea, como "Apellido, Nombre". Si es una institución, escribe solo su nombre.</small><textarea id="se-authors" class="short"></textarea></div>
+      <div><label class="lbl">Año</label><input type="text" id="se-year" placeholder="2024"></div>
+      <div><label class="lbl">Ámbito (para antecedentes)</label><select id="se-scope"><option value="">Ninguno</option><option value="int">Internacional</option><option value="reg">Latinoamérica</option><option value="nac">Nacional</option></select></div>
+      <div><label class="lbl">Revista, editorial o sitio</label><input type="text" id="se-venue"></div>
+      <div><label class="lbl">DOI o URL</label><input type="text" id="se-url" placeholder="10.xxxx/xxxx o https://..."></div>
+      <div class="full"><label class="lbl">Texto que leerá la IA</label><small class="help">Puedes pegar aquí la transcripción de una entrevista, el texto de un artículo web o corregir lo que se extrajo del archivo.</small><textarea id="se-text" style="min-height:220px"></textarea><div class="counter" id="se-count"></div></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close="m-src">Cancelar</button><button class="btn btn-primary" id="se-save">Guardar cambios</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const words = t => (t || '').trim() ? t.trim().split(/\s+/).length : 0;
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const cut = (t, n) => (t || '').length > n ? t.slice(0, n) + ' […]' : (t || '');
+let toastTimer;
+function toast(msg, ms = 3200){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); }
+function openModal(id){ $('#' + id).classList.add('active'); }
+function closeModal(id){ $('#' + id).classList.remove('active'); }
+function download(name, blob){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function slug(t){ return (t || 'protocolo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w]+/g,'_').slice(0, 50).replace(/^_|_$/g,'') || 'protocolo'; }
+async function setBusy(btn, busy, label){
+  if(!btn) return;
+  if(busy){ btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${label || 'Trabajando…'}`; }
+  else { btn.disabled = false; btn.innerHTML = btn.dataset.label || btn.innerHTML; }
+}
+
+/* =========================================================
+   Constantes
+   ========================================================= */
+const LS_STATE = 'InvestigApp_v4_estado', LS_SNAP = 'InvestigApp_v4_versiones', LS_KEY = 'InvestigApp_v4_clave', OLD_LS = 'InvestigApp_QualitativeCore_v3';
+const PAISES = {CO:'Colombia',MX:'México',PE:'Perú',EC:'Ecuador',CL:'Chile',AR:'Argentina',VE:'Venezuela',BO:'Bolivia',PY:'Paraguay',UY:'Uruguay',CR:'Costa Rica',PA:'Panamá',GT:'Guatemala',HN:'Honduras',SV:'El Salvador',NI:'Nicaragua',DO:'República Dominicana',CU:'Cuba',PR:'Puerto Rico',BR:'Brasil',ES:'España'};
+const LATAM = ['AR','BO','BR','CL','CO','CR','CU','DO','EC','GT','HN','MX','NI','PA','PE','PR','PY','SV','UY','VE'];
+const SCOPE = {int:'Internacional', reg:'Latinoamérica', nac:'Nacional'};
+
+const SYSTEM_PROMPT = `Eres un metodólogo experto en investigación cualitativa según Hernández-Sampieri, Fernández y Baptista (Metodología de la investigación). Ayudas a redactar un protocolo de investigación en español académico, formal y claro.
+REGLAS ESTRICTAS:
+1. Como evidencia usa SOLO las fuentes del repositorio que se te entregan, identificadas como [F1], [F2]… Cítalas en el texto con formato APA 7, usando exactamente la forma indicada en "cita como".
+2. NUNCA inventes autores, estudios, cifras, leyes, fechas, páginas ni referencias. Puedes mencionar a Hernández-Sampieri como marco metodológico general, sin inventar páginas.
+3. Si una afirmación necesita respaldo y no está en las fuentes, escribe [VERIFICAR] justo después de ella.
+4. Si las fuentes no alcanzan para la tarea, agrega al final una nota breve que empiece con "Nota:" explicando qué falta.
+5. Mantén coherencia total con lo que ya está escrito en el proyecto (título, pregunta, objetivos).
+6. Entrega texto plano listo para pegar: sin títulos con #, sin asteriscos ni negritas. Separa los párrafos con una línea en blanco. Usa guiones para listas solo cuando la tarea lo pida.`;
+
+/* =========================================================
+   Estructura del protocolo
+   ========================================================= */
+const FLOORS = [
+  {name:'Empezar', rooms:['inicio','config','fuentes']},
+  {name:'Piso 1 · Fundamentación', rooms:['titulo','planteamiento','justificacion']},
+  {name:'Piso 2 · Referentes', rooms:['antecedentes','referente']},
+  {name:'Piso 3 · Diseño', rooms:['objetivos','metodologia','cronograma','etica','rigor','recursos']},
+  {name:'Piso 4 · Síntesis', rooms:['resumen','referencias','revision']}
+];
+
+const ROOMS = {
+  inicio:{icon:'🌱', title:'Bienvenida', custom:true},
+  config:{icon:'🔑', title:'Configuración IA', custom:true},
+  fuentes:{icon:'📚', title:'Mis fuentes', custom:true},
+  titulo:{num:'1.1', icon:'🏷️', title:'Título', desc:'Un buen título cualitativo es claro, delimitado y abierto: deja ver el fenómeno, los participantes y el contexto, sin anticipar resultados.',
+    fields:[{key:'titulo', label:'Título de la investigación', type:'short', hint:'La IA propone varias opciones. Deja solo la que prefieras antes de aplicarla.',
+      gen:'Propón tres opciones de título para esta investigación cualitativa. Cada título debe ser claro, delimitado (fenómeno, participantes, lugar y tiempo cuando se conozcan), abierto y sin sesgos ni resultados anticipados. Numera las opciones y debajo de cada una explica en una línea su enfoque.'}]},
+  planteamiento:{num:'1.2', icon:'🎯', title:'Planteamiento del problema', desc:'Describe el fenómeno de interés, el ambiente donde ocurre, quiénes participan y por qué vale la pena comprenderlo.',
+    fields:[
+      {key:'planteamiento', label:'Planteamiento del problema', gen:'Redacta el planteamiento del problema cualitativo según Hernández-Sampieri, en 4 a 6 párrafos: contexto del fenómeno, situación problemática respaldada por las fuentes, propósito central, ambiente o contexto inicial, participantes y vacío de conocimiento que justifica explorarlo.'},
+      {key:'pregunta', label:'Pregunta de investigación', type:'short', gen:'Formula la pregunta central de investigación, abierta, exploratoria o descriptiva, que no presuponga respuestas. Debajo, con guiones, escribe de dos a tres preguntas específicas que la desagreguen.'}
+    ]},
+  justificacion:{num:'1.3', icon:'💡', title:'Justificación y viabilidad', desc:'Explica por qué conviene hacer el estudio: relevancia social, implicaciones prácticas, valor teórico y si es viable.',
+    fields:[{key:'justificacion', label:'Justificación y viabilidad', gen:'Redacta la justificación y la viabilidad del estudio según los criterios de Hernández-Sampieri: conveniencia, relevancia social, implicaciones prácticas, valor teórico y utilidad metodológica. Termina con un párrafo de viabilidad (acceso al campo, tiempo, recursos y consideraciones éticas).'}]},
+  antecedentes:{num:'2.1', icon:'🔍', title:'Antecedentes investigativos', desc:'Estudios previos que sustentan tu investigación, organizados por ámbito.',
+    tip:'Primero busca estudios reales en la base académica de abajo y agrégalos a tus fuentes. La IA redacta cada ámbito solo con las fuentes marcadas para ese ámbito, así no se inventan referencias.',
+    fields:[
+      {key:'antecedentesInt', label:'Antecedentes internacionales', gen:'Redacta los antecedentes INTERNACIONALES usando las fuentes marcadas con ámbito Internacional. Por cada estudio: autor y año, propósito, método, hallazgos principales y relación con esta investigación. Cierra con un párrafo de síntesis que muestre qué aportan y qué vacío dejan.'},
+      {key:'antecedentesReg', label:'Antecedentes latinoamericanos', gen:'Redacta los antecedentes LATINOAMERICANOS usando las fuentes marcadas con ámbito Latinoamérica. Por cada estudio: autor y año, país, propósito, método, hallazgos y relación con esta investigación. Cierra con una síntesis.'},
+      {key:'antecedentesNac', label:'Antecedentes nacionales', gen:'Redacta los antecedentes NACIONALES usando las fuentes marcadas con ámbito Nacional. Por cada estudio: autor y año, propósito, método, hallazgos y relación con esta investigación. Cierra con una síntesis.'}
+    ]},
+  referente:{num:'2.2', icon:'🧠', title:'Referente conceptual', desc:'Conceptos y categorías iniciales. En lo cualitativo son definiciones tentativas que se ajustan con lo que digan los participantes.',
+    fields:[{key:'referente', label:'Conceptos y categorías iniciales', gen:'Elabora el referente conceptual: define el concepto central y de tres a cinco categorías iniciales vinculadas, apoyándote en las fuentes. Aclara que son categorías tentativas, sujetas a la perspectiva de los participantes, y explica cómo se relacionan entre sí.'}]},
+  objetivos:{num:'3.1', icon:'🎯', title:'Objetivos', desc:'Usa verbos cualitativos abiertos: comprender, explorar, describir, interpretar, analizar, examinar.',
+    fields:[
+      {key:'objGeneral', label:'Objetivo general', type:'short', gen:'Redacta UN objetivo general cualitativo en una sola oración, con verbo abierto en infinitivo (comprender, explorar, interpretar, describir), que responda directamente a la pregunta central e incluya fenómeno, participantes y contexto.'},
+      {key:'objEspecificos', label:'Objetivos específicos', limit:500, gen:'Redacta de tres a cuatro objetivos específicos cualitativos, uno por línea con guion, secuenciales, alcanzables y que juntos permitan cumplir el objetivo general. Cada uno con un verbo en infinitivo distinto.'}
+    ]},
+  metodologia:{num:'3.2', icon:'⚙️', title:'Metodología', desc:'Ruta cualitativa: enfoque, diseño, participantes, instrumentos y análisis.',
+    fields:[{key:'metodologia', label:'Ruta metodológica', limit:3000, gen:'Redacta la metodología cualitativa completa: enfoque y alcance; diseño sugerido (compara brevemente fenomenológico, narrativo, etnográfico, teoría fundamentada e investigación-acción y justifica el elegido); contexto o ambiente; muestra inicial (tipo de muestreo cualitativo, criterios de inclusión y exclusión, saturación); inmersión inicial en el campo; técnicas e instrumentos (entrevista semiestructurada, observación, grupos focales o revisión documental, según convenga); procedimiento de recolección; y análisis (codificación abierta y axial, categorías emergentes, triangulación). Incluye de cuatro a seis preguntas de ejemplo para la guía de entrevista.'}]},
+  cronograma:{num:'3.3', icon:'📅', title:'Cronograma', custom:true},
+  etica:{num:'3.4', icon:'🤝', title:'Consideraciones éticas', desc:'Cómo vas a proteger a los participantes y sus datos.',
+    fields:[{key:'etica', label:'Consideraciones éticas', gen:'Redacta las consideraciones éticas del estudio: consentimiento informado (y asentimiento si hay menores de edad), participación voluntaria y derecho a retirarse, confidencialidad y anonimato, tratamiento y custodia de datos personales (si el país es Colombia, refiérete a la Ley 1581 de 2012 de protección de datos personales), manejo de grabaciones, riesgos y beneficios, y devolución de resultados a los participantes.'}]},
+  rigor:{num:'3.5', icon:'🧭', title:'Rigor cualitativo', desc:'Criterios de calidad que reemplazan la validez y confiabilidad de lo cuantitativo.',
+    fields:[{key:'rigor', label:'Criterios de rigor', gen:'Explica cómo se garantizará el rigor de este estudio según Hernández-Sampieri, con estrategias concretas para cada criterio: dependencia (consistencia), credibilidad, transferencia y confirmación. Menciona estrategias como triangulación, auditoría, chequeo con participantes, descripción densa del contexto, bitácora de análisis y reflexión sobre los sesgos del investigador.'}]},
+  recursos:{num:'3.6', icon:'💼', title:'Recursos y presupuesto', desc:'Lo que necesitas para hacer el estudio.',
+    fields:[{key:'recursos', label:'Recursos y presupuesto', gen:'Describe los recursos necesarios con guiones, en cuatro grupos: humanos, materiales, tecnológicos y de desplazamiento. Después, un presupuesto estimado por rubro en la moneda del país del estudio; marca todos los valores con [VERIFICAR] porque son estimaciones que el investigador debe confirmar.'}]},
+  resumen:{num:'4.1', icon:'✨', title:'Resumen', desc:'Síntesis del protocolo. Se escribe al final, cuando lo demás está listo.',
+    fields:[{key:'resumen', label:'Resumen del proyecto', limit:500, help:'Recomendado: entre 200 y 300 palabras.', gen:'Redacta el resumen del protocolo, entre 200 y 300 palabras, en un solo párrafo: problema, objetivo general, justificación breve, diseño metodológico, participantes y aporte esperado. Al final, en una línea aparte, "Palabras clave:" con 4 a 6 términos. No incluyas citas.'}]},
+  referencias:{num:'4.2', icon:'📖', title:'Referencias APA', custom:true},
+  revision:{num:'4.3', icon:'🔍', title:'Revisión de coherencia', custom:true}
+};
+
+const FIELD = {};
+Object.entries(ROOMS).forEach(([rid, r]) => (r.fields || []).forEach(f => { FIELD[f.key] = {...f, room: rid}; }));
+FIELD.bibliografia = {key:'bibliografia', label:'Referencias', room:'referencias'};
+const TEXT_KEYS = ['titulo','planteamiento','pregunta','justificacion','antecedentesInt','antecedentesReg','antecedentesNac','referente','objGeneral','objEspecificos','metodologia','etica','rigor','recursos','resumen','bibliografia'];
+
+/* =========================================================
+   Estado y guardado
+   ========================================================= */
+const DEFAULT_ROWS = () => [
+  {fase:'Inmersión inicial', actividad:'Acercamiento al contexto y a los participantes', meses:[1]},
+  {fase:'Fundamentación', actividad:'Revisión de literatura y antecedentes', meses:[1,2]},
+  {fase:'Diseño', actividad:'Diseño y validación de instrumentos', meses:[2]},
+  {fase:'Recolección', actividad:'Entrevistas y observación en campo', meses:[3,4]},
+  {fase:'Análisis', actividad:'Codificación y categorías emergentes (análisis recurrente)', meses:[3,4,5]},
+  {fase:'Análisis', actividad:'Triangulación y chequeo con participantes', meses:[5]},
+  {fase:'Informe', actividad:'Redacción y socialización del informe final', meses:[6]}
+];
+function defaultState(){ return {version:4, fields:{}, cronograma:{meses:6, notas:'', filas:DEFAULT_ROWS()}, settings:{model:'gpt-4o-mini', pais:'CO', budget:28000, remember:false}, review:'', updated:null}; }
+let state = defaultState();
+let sources = [];
+let saveTimer;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_STATE);
+    if(raw){ const s = JSON.parse(raw); state = {...defaultState(), ...s, settings:{...defaultState().settings, ...(s.settings||{})}, cronograma:{...defaultState().cronograma, ...(s.cronograma||{})}}; return false; }
+  }catch(e){}
+  return true; // primera vez
+}
+function scheduleSave(){
+  $('#save-state').textContent = 'Guardando…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 700);
+}
+function saveNow(){
+  state.updated = new Date().toISOString();
+  try{ localStorage.setItem(LS_STATE, JSON.stringify(state)); $('#save-state').textContent = '✓ Guardado'; }
+  catch(e){ $('#save-state').textContent = '⚠ Sin espacio'; toast('No se pudo guardar: el navegador no tiene espacio. Exporta un respaldo.'); }
+  updateProgress();
+}
+
+/* Clave API: se guarda aparte. Por defecto solo dura la sesión */
+function getKey(){ return sessionStorage.getItem(LS_KEY) || localStorage.getItem(LS_KEY) || ''; }
+function setKey(v){
+  v = (v || '').trim();
+  sessionStorage.removeItem(LS_KEY); localStorage.removeItem(LS_KEY);
+  if(!v) return;
+  (state.settings.remember ? localStorage : sessionStorage).setItem(LS_KEY, v);
+}
+
+/* =========================================================
+   Base de datos de fuentes (IndexedDB)
+   ========================================================= */
+const DB = {
+  db:null,
+  open(){ return new Promise((res, rej) => { const r = indexedDB.open('InvestigApp_v4_fuentes', 1); r.onupgradeneeded = e => { const d = e.target.result; if(!d.objectStoreNames.contains('sources')) d.createObjectStore('sources', {keyPath:'id'}); }; r.onsuccess = e => { this.db = e.target.result; res(); }; r.onerror = rej; }); },
+  tx(mode){ return this.db.transaction('sources', mode).objectStore('sources'); },
+  all(){ return new Promise((res, rej) => { const r = this.tx('readonly').getAll(); r.onsuccess = () => res(r.result || []); r.onerror = rej; }); },
+  put(item){ return new Promise((res, rej) => { const r = this.tx('readwrite').put(item); r.onsuccess = () => res(); r.onerror = rej; }); },
+  del(id){ return new Promise((res, rej) => { const r = this.tx('readwrite').delete(id); r.onsuccess = () => res(); r.onerror = rej; }); },
+  clear(){ return new Promise((res, rej) => { const r = this.tx('readwrite').clear(); r.onsuccess = () => res(); r.onerror = rej; }); }
+};
+
+/* Migración desde la versión anterior (campos, enlaces y archivos) */
+async function migrateOld(){
+  let migrated = false;
+  try{
+    const raw = localStorage.getItem(OLD_LS);
+    if(raw){
+      const old = JSON.parse(raw);
+      TEXT_KEYS.forEach(k => { if(old[k] && !state.fields[k]) { state.fields[k] = old[k]; migrated = true; } });
+      if(old.cronograma && !state.cronograma.notas){ state.cronograma.notas = old.cronograma; migrated = true; }
+      if(old.apiKey){ if(!getKey()) sessionStorage.setItem(LS_KEY, old.apiKey); delete old.apiKey; localStorage.setItem(OLD_LS, JSON.stringify(old)); }
+    }
+  }catch(e){}
+  try{
+    const oldDb = await new Promise((res) => { const r = indexedDB.open('InvestigApp_DB_Qual_v3'); r.onsuccess = e => res(e.target.result); r.onerror = () => res(null); r.onupgradeneeded = e => { e.target.transaction.abort(); res(null); }; });
+    if(oldDb && oldDb.objectStoreNames.contains('links') && !localStorage.getItem('InvestigApp_v4_migrado')){
+      const getAll = name => new Promise(res => { try{ const r = oldDb.transaction(name,'readonly').objectStore(name).getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); }catch(e){ res([]); } });
+      const links = await getAll('links'); const files = oldDb.objectStoreNames.contains('files') ? await getAll('files') : [];
+      for(const l of links){ const s = newSource('link', l.title, ''); s.meta.url = l.url; s.note = 'Pega el texto del artículo en "Editar" para que la IA pueda leerlo.'; await DB.put(s); migrated = true; }
+      for(const f of files){
+        try{ const blob = await (await fetch(f.content)).blob(); const file = new File([blob], f.name, {type: f.type || blob.type}); const s = await fileToSource(file); await DB.put(s); migrated = true; }catch(e){}
+      }
+      localStorage.setItem('InvestigApp_v4_migrado', '1');
+      oldDb.close();
+    } else if(oldDb) oldDb.close();
+  }catch(e){}
+  if(migrated){ saveNow(); setTimeout(() => toast('🌿 Recuperé tu avance de la versión anterior'), 600); }
+}
+
+/* =========================================================
+   Fuentes: creación y lectura de archivos
+   ========================================================= */
+function newSource(kind, title, text){
+  return {id:uid(), kind, title:title || 'Sin título', text:text || '', note:'', include:true, scope:'', addedAt:Date.now(), meta:{authors:[], year:'', venue:'', doi:'', url:''}};
+}
+async function pdfText(buf){
+  if(!window.pdfjsLib) throw new Error('No se pudo cargar el lector de PDF (revisa tu conexión).');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  const out = []; const max = Math.min(pdf.numPages, 80);
+  for(let i = 1; i <= max; i++){ const p = await pdf.getPage(i); const c = await p.getTextContent(); out.push(c.items.map(it => it.str).join(' ')); }
+  return out.join('\n\n');
+}
+function htmlToText(h){ const d = new DOMParser().parseFromString(h, 'text/html'); d.querySelectorAll('script,style,nav,footer').forEach(n => n.remove()); return d.body ? d.body.innerText || d.body.textContent : ''; }
+function fileToDataURL(file){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+async function fileToSource(file){
+  const name = file.name, type = file.type || '';
+  const s = newSource('file', name.replace(/\.[^.]+$/, ''), '');
+  s.fileName = name; s.size = file.size;
+  try{
+    if(type === 'application/pdf' || /\.pdf$/i.test(name)){ s.text = await pdfText(await file.arrayBuffer()); if(!s.text.trim()) s.note = 'El PDF no tiene texto seleccionable (puede ser escaneado). Pega el texto en "Editar".'; }
+    else if(/\.docx$/i.test(name)){ if(!window.mammoth) throw new Error('No se pudo cargar el lector de Word.'); s.text = (await mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()})).value; }
+    else if(/\.html?$/i.test(name)) s.text = htmlToText(await file.text());
+    else if(type.startsWith('text/') || /\.(txt|md|csv|json|rtf|vtt|srt)$/i.test(name)) s.text = await file.text();
+    else if(type.startsWith('image/')){ s.preview = await fileToDataURL(file); s.note = 'La IA no lee imágenes. Agrega una descripción o transcripción en "Editar".'; }
+    else if(/\.doc$/i.test(name)) s.note = 'Los .doc antiguos no se pueden leer. Guárdalo como .docx o PDF, o pega el texto en "Editar".';
+    else s.note = 'Formato sin lectura automática. Pega el contenido en "Editar".';
+  }catch(e){ s.note = 'No se pudo extraer el texto: ' + e.message; }
+  s.text = (s.text || '').replace(/\r/g, '').replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return s;
+}
+async function handleFiles(list){
+  const files = Array.from(list || []); if(!files.length) return;
+  let ok = 0;
+  for(const f of files){
+    toast(`📖 Leyendo ${f.name}…`, 10000);
+    const s = await fileToSource(f);
+    try{ await DB.put(s); sources.push(s); ok++; }catch(e){ toast('No se pudo guardar ' + f.name); }
+  }
+  renderSources();
+  toast(`✅ ${ok} archivo(s) agregado(s) a tus fuentes`);
+}
+
+/* =========================================================
+   Autores y APA 7
+   ========================================================= */
+function splitName(full){
+  const p = (full || '').trim().split(/\s+/).filter(Boolean);
+  if(p.length <= 1) return {family: p[0] || '', given: ''};
+  const nFam = p.length >= 4 ? 2 : 1;
+  return {family: p.slice(-nFam).join(' '), given: p.slice(0, -nFam).join(' ')};
+}
+function initials(g){ return (g || '').split(/[\s]+/).filter(Boolean).map(w => w.split('-').map(x => x[0] ? x[0].toUpperCase() + '.' : '').join('-')).join(' '); }
+function fmtAuthor(a){ return a.given ? `${a.family}, ${initials(a.given)}` : a.family; }
+function apaAuthors(list){
+  const f = (list || []).filter(a => a.family || a.given).map(fmtAuthor);
+  if(!f.length) return '';
+  if(f.length === 1) return f[0];
+  if(f.length <= 20) return f.slice(0, -1).join(', ') + ', & ' + f[f.length - 1];
+  return f.slice(0, 19).join(', ') + ', . . . ' + f[f.length - 1];
+}
+function citeKey(s){
+  const a = (s.meta.authors || []).filter(x => x.family);
+  const y = s.meta.year || 's.f.';
+  if(!a.length) return `${cut(s.title, 40)}, ${y}`;
+  if(a.length === 1) return `${a[0].family}, ${y}`;
+  if(a.length === 2) return `${a[0].family} y ${a[1].family}, ${y}`;
+  return `${a[0].family} et al., ${y}`;
+}
+function apaRef(s){
+  const m = s.meta || {};
+  const t = (s.title || '').replace(/[.\s]+$/, ''); const tEnd = /[?!]$/.test(t) ? '' : '.';
+  const au = apaAuthors(m.authors); const y = m.year || 's.f.';
+  let r = au ? `${au} (${y}). ${t}${tEnd}` : `${t}${tEnd} (${y}).`;
+  if(m.venue){ r += ` ${m.venue}`; if(m.volume) r += `, ${m.volume}`; if(m.issue) r += `(${m.issue})`; if(m.pages) r += `, ${m.pages}`; r += '.'; }
+  if(m.doi) r += ` https://doi.org/${m.doi}`; else if(m.url) r += ` ${m.url}`;
+  return r.replace(/\.\./g, '.');
+}
+function authorsToText(list){ return (list || []).map(a => a.given ? `${a.family}, ${a.given}` : a.family).join('\n'); }
+function textToAuthors(t){ return (t || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => { const i = l.indexOf(','); return i > 0 ? {family: l.slice(0, i).trim(), given: l.slice(i + 1).trim()} : {family: l, given: ''}; }); }
+
+/* =========================================================
+   Contexto para la IA
+   ========================================================= */
+function projectContext(exclude, per = 1000){
+  const order = ['titulo','pregunta','objGeneral','objEspecificos','planteamiento','justificacion','referente','metodologia','etica','rigor'];
+  const lines = order.filter(k => k !== exclude && (state.fields[k] || '').trim()).map(k => `- ${FIELD[k].label}: ${cut(state.fields[k].trim(), per)}`);
+  return lines.length ? lines.join('\n') : '(Aún no hay secciones escritas.)';
+}
+function sourcesContext(scope){
+  let list = sources.filter(s => s.include && (s.text || '').trim());
+  if(scope){ list = list.filter(s => s.scope === scope || (s.kind !== 'academic' && !s.scope)); }
+  if(!list.length) return {text:'(No hay fuentes con texto disponible para esta tarea. No inventes citas: usa [VERIFICAR] donde falte respaldo y explícalo en la Nota final.)', n:0};
+  const budget = Number(state.settings.budget) || 28000;
+  const per = Math.max(900, Math.floor(budget / list.length));
+  const text = list.map((s, i) => `[F${i + 1}] ${s.title}\nCita como: (${citeKey(s)})${s.scope ? ` · Ámbito: ${SCOPE[s.scope]}` : ''}${s.kind === 'academic' ? ' · Solo se dispone del resumen del artículo' : ''}\n${cut(s.text, per)}`).join('\n\n');
+  return {text, n:list.length};
+}
+function estTokens(str){ return Math.round((str || '').length / 4); }
+
+/* =========================================================
+   Llamadas a OpenAI
+   ========================================================= */
+async function callAI(messages, {json = false, max = 2200} = {}){
+  const key = getKey();
+  if(!key){ showRoom('config'); toast('🔑 Primero escribe tu API Key de OpenAI'); throw new Error('__nokey'); }
+  const model = (state.settings.model || 'gpt-4o-mini').trim();
+  const body = {model, messages, max_completion_tokens: max};
+  if(!/^(o\d|gpt-5)/i.test(model)) body.temperature = json ? 0.3 : 0.5;
+  if(json) body.response_format = {type: 'json_object'};
+  let res;
+  try{ res = await fetch('https://api.openai.com/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer ' + key}, body: JSON.stringify(body)}); }
+  catch(e){ throw new Error('No hay conexión con OpenAI. Revisa tu internet.'); }
+  const j = await res.json().catch(() => ({}));
+  if(!res.ok){
+    const m = j.error?.message || ('Error ' + res.status);
+    if(res.status === 401) throw new Error('La API Key no es válida o fue revocada.');
+    if(res.status === 429) throw new Error('Sin saldo o demasiadas solicitudes seguidas. ' + m);
+    throw new Error(m);
+  }
+  return {text: (j.choices?.[0]?.message?.content || '').trim(), usage: j.usage, model};
+}
+
+let pendingKey = null;
+function openResult(key, text, info){
+  pendingKey = key;
+  $('#ai-title').textContent = '✨ Propuesta: ' + (FIELD[key]?.label || '');
+  const v = (text.match(/\[VERIFICAR\]/g) || []).length;
+  $('#ai-meta').textContent = info || '';
+  let hint = '';
+  if(FIELD[key]?.hint) hint += `<div class="tip">💡 ${esc(FIELD[key].hint)}</div>`;
+  if(v) hint += `<div class="warn">⚠️ Este texto tiene ${v} marca(s) [VERIFICAR]: son afirmaciones sin respaldo en tus fuentes. Revísalas o agrega la fuente antes de entregar.</div>`;
+  $('#ai-hint').innerHTML = hint;
+  $('#ai-result').value = text;
+  openModal('m-ai');
+}
+function applyResult(mode){
+  if(!pendingKey) return;
+  const val = $('#ai-result').value.trim();
+  const cur = (state.fields[pendingKey] || '').trim();
+  state.fields[pendingKey] = mode === 'append' && cur ? cur + '\n\n' + val : val;
+  const el = document.querySelector(`[data-key="${pendingKey}"]`); if(el) el.value = state.fields[pendingKey];
+  updateCounter(pendingKey); scheduleSave(); closeModal('m-ai');
+  toast('✅ Texto aplicado'); pendingKey = null;
+}
+
+async function aiGenerate(key, btn){
+  const f = FIELD[key];
+  const scope = {antecedentesInt:'int', antecedentesReg:'reg', antecedentesNac:'nac'}[key];
+  const src = sourcesContext(scope);
+  const current = (state.fields[key] || '').trim();
+  const per = key === 'resumen' ? 2500 : 1000;
+  const user = `PAÍS DEL ESTUDIO: ${PAISES[state.settings.pais] || state.settings.pais}
+
+PROYECTO HASTA AHORA:
+${projectContext(key, per)}
+
+FUENTES DEL REPOSITORIO:
+${src.text}
+
+TAREA (${f.label}):
+${f.gen}${current ? `\n\nTEXTO ACTUAL DEL INVESTIGADOR (consérvalo como base, mejóralo y complétalo sin perder sus ideas):\n${current}` : ''}`;
+  await runAI(btn, key, [{role:'system', content:SYSTEM_PROMPT}, {role:'user', content:user}], src.n);
+}
+async function aiRewrite(key, mode, btn){
+  const cur = (state.fields[key] || '').trim();
+  if(!cur){ toast('Primero escribe algo en este campo'); return; }
+  const task = mode === 'improve'
+    ? 'Mejora la redacción del siguiente texto académico: corrige ortografía y gramática, mejora la claridad, la cohesión y el registro formal. Conserva el contenido, las ideas y todas las citas tal como están. No agregues información nueva.'
+    : 'Acorta el siguiente texto a cerca del 60 % de su extensión, conservando las ideas principales y todas las citas. No agregues información nueva.';
+  await runAI(btn, key, [{role:'system', content:SYSTEM_PROMPT}, {role:'user', content:`${task}\n\nTEXTO:\n${cur}`}], null);
+}
+async function runAI(btn, key, messages, nSources){
+  await setBusy(btn, true, 'Redactando…');
+  try{
+    const r = await callAI(messages);
+    const u = r.usage ? ` · ${r.usage.total_tokens.toLocaleString('es-CO')} tokens` : '';
+    const s = nSources === null ? '' : ` · ${nSources} fuente(s) leída(s)`;
+    openResult(key, r.text, `Modelo ${r.model}${u}${s}. Puedes editar el texto antes de aplicarlo.`);
+  }catch(e){ if(e.message !== '__nokey') alert('No se pudo completar: ' + e.message); }
+  finally{ setBusy(btn, false); }
+}
+
+/* =========================================================
+   Búsqueda académica (OpenAlex + Crossref)
+   ========================================================= */
+let oaCache = {};
+function rebuildAbstract(inv){
+  if(!inv) return '';
+  const arr = [];
+  Object.entries(inv).forEach(([w, pos]) => pos.forEach(p => { arr[p] = w; }));
+  return arr.filter(Boolean).join(' ');
+}
+async function oaSearch(btn){
+  const q = $('#oa-q').value.trim();
+  if(!q){ toast('Escribe qué quieres buscar'); return; }
+  const scope = $('#oa-scope').value; const y = parseInt($('#oa-year').value) || 2000;
+  let filter = `from_publication_year:${y}`;
+  if(scope === 'reg') filter += `,authorships.institutions.country_code:${LATAM.join('|')}`;
+  if(scope === 'nac') filter += `,authorships.institutions.country_code:${state.settings.pais}`;
+  const url = `https://api.openalex.org/works?search=${encodeURIComponent(q)}&filter=${filter}&per-page=12`;
+  const box = $('#oa-results');
+  await setBusy(btn, true, 'Buscando…');
+  try{
+    const r = await fetch(url); if(!r.ok) throw new Error('Error ' + r.status);
+    const j = await r.json();
+    const items = j.results || [];
+    if(!items.length){ box.innerHTML = `<div class="empty">No encontré resultados. Prueba con menos palabras, sinónimos o en inglés, o amplía el año.</div>`; return; }
+    box.innerHTML = `<p class="muted" style="margin-top:1rem">${(j.meta?.count || items.length).toLocaleString('es-CO')} resultados · mostrando los ${items.length} más relevantes</p><div class="oa-list">` + items.map(w => {
+      oaCache[w.id] = w;
+      const au = (w.authorships || []).slice(0, 4).map(a => a.author?.display_name).filter(Boolean).join(', ') + ((w.authorships || []).length > 4 ? ' et al.' : '');
+      const abs = rebuildAbstract(w.abstract_inverted_index);
+      const venue = w.primary_location?.source?.display_name || '';
+      const added = sources.some(s => s.oaId === w.id);
+      const link = w.doi || w.primary_location?.landing_page_url || w.id;
+      return `<div class="oa-item"><h4>${esc(w.display_name || w.title || 'Sin título')}</h4>
+        <div class="meta">${esc(au || 'Autor no disponible')} · ${w.publication_year || 's.f.'}${venue ? ' · ' + esc(venue) : ''}</div>
+        <p>${abs ? esc(cut(abs, 380)) : '<i>Sin resumen disponible: si te sirve, descarga el PDF y súbelo a tus fuentes.</i>'}</p>
+        <div class="row"><button class="btn btn-primary btn-sm" data-oa-add="${esc(w.id)}" data-scope="${scope}" ${added ? 'disabled' : ''}>${added ? '✓ Ya está en tus fuentes' : '＋ Agregar como ' + SCOPE[scope]}</button>
+        <a class="btn btn-ghost btn-sm" href="${esc(link)}" target="_blank" rel="noopener">🌐 Abrir</a></div></div>`;
+    }).join('') + '</div>';
+  }catch(e){ box.innerHTML = `<div class="warn">No se pudo consultar la base académica (${esc(e.message)}). Revisa tu conexión.</div>`; }
+  finally{ setBusy(btn, false); }
+}
+async function oaAdd(id, scope, btn){
+  const w = oaCache[id]; if(!w) return;
+  await setBusy(btn, true, 'Agregando…');
+  const doi = (w.doi || '').replace(/^https?:\/\/doi\.org\//i, '');
+  let authors = (w.authorships || []).map(a => splitName(a.author?.display_name));
+  if(doi){
+    try{ const r = await fetch('https://api.crossref.org/works/' + encodeURI(doi)); if(r.ok){ const j = await r.json(); const au = j.message?.author; if(au && au.length) authors = au.map(a => ({family: a.family || a.name || '', given: a.given || ''})); } }catch(e){}
+  }
+  const abs = rebuildAbstract(w.abstract_inverted_index);
+  const s = newSource('academic', w.display_name || w.title, abs ? 'Resumen del artículo: ' + abs : '');
+  s.oaId = w.id; s.scope = scope;
+  const b = w.biblio || {};
+  s.meta = {authors, year: w.publication_year || '', venue: w.primary_location?.source?.display_name || '', volume: b.volume || '', issue: b.issue || '', pages: b.first_page ? (b.last_page && b.last_page !== b.first_page ? `${b.first_page}-${b.last_page}` : b.first_page) : '', doi, url: w.primary_location?.landing_page_url || w.id};
+  if(!abs) s.note = 'Sin resumen: la IA solo conoce el título. Sube el PDF o pega el texto en "Editar".';
+  await DB.put(s); sources.push(s);
+  btn.disabled = true; btn.dataset.label = '✓ Agregado'; setBusy(btn, false); btn.disabled = true;
+  renderSources(); toast('✅ Estudio agregado a tus fuentes');
+}
+
+/* =========================================================
+   Renderizado de la interfaz
+   ========================================================= */
+function renderSidebar(){
+  $('#sidebar').innerHTML = FLOORS.map(fl => `<div class="floor"><div class="floor-title">${fl.name}</div>${fl.rooms.map(id => {
+    const r = ROOMS[id];
+    return `<button class="nav-btn" data-room="${id}">${r.num ? `<span class="num">${r.num}</span>` : ''}<span>${r.icon} ${r.title}</span>${r.num ? `<span class="dot" data-dot="${id}"></span>` : ''}</button>`;
+  }).join('')}</div>`).join('');
+}
+function fieldHTML(f){
+  const input = `<textarea class="${f.type === 'short' ? 'short' : ''}" data-key="${f.key}" placeholder="Escribe aquí o pide ayuda a la IA…"></textarea>`;
+  return `<div class="field-block"><label>${f.label}</label>${f.help ? `<small class="help">${f.help}</small>` : ''}${input}
+    <div class="field-foot"><div class="ai-tools">
+      ${f.gen ? `<button class="btn btn-ai" data-act="gen" data-key="${f.key}">✨ Redactar con IA</button>` : ''}
+      <button class="btn btn-soft" data-act="improve" data-key="${f.key}">✍️ Mejorar redacción</button>
+      ${f.type !== 'short' ? `<button class="btn btn-soft" data-act="shorten" data-key="${f.key}">✂️ Acortar</button>` : ''}
+    </div><span class="counter" data-counter="${f.key}"></span></div></div>`;
+}
+function head(r){ return `<div class="room-head">${r.num ? `<span class="room-num">${r.num}</span>` : ''}<h2>${r.icon} ${r.title}</h2>${r.desc ? `<p>${r.desc}</p>` : ''}</div>`; }
+
+function renderMain(){
+  const main = $('#main'); let html = '';
+  Object.entries(ROOMS).forEach(([id, r]) => {
+    let inner = '';
+    if(id === 'inicio') inner = roomInicio();
+    else if(id === 'config') inner = roomConfig();
+    else if(id === 'fuentes') inner = roomFuentes();
+    else if(id === 'cronograma') inner = roomCronograma();
+    else if(id === 'referencias') inner = roomReferencias();
+    else if(id === 'revision') inner = roomRevision();
+    else {
+      inner = head(r) + (r.tip ? `<div class="tip">💡 ${r.tip}</div>` : '');
+      if(id === 'antecedentes') inner += searchBox();
+      inner += `<div class="card">${r.fields.map(fieldHTML).join('')}</div>`;
+    }
+    html += `<section class="room" id="room-${id}">${inner}</section>`;
+  });
+  main.innerHTML = html;
+  TEXT_KEYS.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if(el) el.value = state.fields[k] || ''; updateCounter(k); });
+  fillConfig(); renderCrono(); renderSources(); renderChecks();
+  if(state.review) $('#review-out').textContent = state.review, $('#review-out').style.display = 'block';
+}
+
+function roomInicio(){
+  return `<div class="hero"><div class="leaf">🌿</div><h2>¡Hola! Vamos a construir tu protocolo paso a paso 🌱</h2>
+    <p>InvestigApp te acompaña a redactar una investigación cualitativa con el enfoque de Hernández-Sampieri. La IA escribe a partir de <b>tus fuentes reales</b> y marca con [VERIFICAR] lo que no tenga respaldo, para que nada inventado llegue a tu documento.</p>
+    <div class="steps">
+      <div class="step" data-go="config"><div class="n">1</div><b>Conecta la IA</b><span>Escribe tu API Key de OpenAI y elige el país del estudio.</span></div>
+      <div class="step" data-go="fuentes"><div class="n">2</div><b>Sube tus fuentes</b><span>PDF, Word, entrevistas o textos. La IA los lee de verdad.</span></div>
+      <div class="step" data-go="antecedentes"><div class="n">3</div><b>Busca antecedentes</b><span>Encuentra estudios reales y agrégalos con un clic.</span></div>
+      <div class="step" data-go="titulo"><div class="n">4</div><b>Redacta y revisa</b><span>Avanza piso a piso y al final revisa la coherencia.</span></div>
+    </div></div>
+    <div class="card"><h3>Estado de tu protocolo</h3><p class="muted" style="margin-bottom:.8rem">Toca cualquier apartado para ir a él.</p><div class="status-grid" id="status-grid"></div></div>
+    <div class="card"><h3>🔒 Sobre tus datos</h3><p class="muted">Todo se guarda solo en este navegador. Si cambias de equipo o borras el historial, se pierde: usa <b>Archivo → Exportar proyecto</b> para tener un respaldo. Lo que envías a la IA va a los servidores de OpenAI; evita subir datos personales de los participantes sin anonimizar.</p></div>`;
+}
+function roomConfig(){
+  const models = ['gpt-4o-mini','gpt-4.1-mini','gpt-4o','gpt-4.1'];
+  return head({icon:'🔑', title:'Configuración de la IA', desc:'Conecta tu cuenta de OpenAI y ajusta cómo trabaja el asistente.'}) + `
+  <div class="card">
+    <div class="field-block"><label for="cfg-key">API Key de OpenAI</label><small class="help">La consigues en platform.openai.com → API keys. Cada uso consume saldo de tu cuenta.</small>
+      <div style="display:flex;gap:.5rem"><input type="password" id="cfg-key" placeholder="sk-..." autocomplete="off"><button class="btn btn-soft" id="cfg-show" type="button">👁️</button></div>
+      <label class="switch" style="margin-top:.6rem"><input type="checkbox" id="cfg-remember"> Recordar la clave en este equipo</label>
+      <div class="warn">🔒 Si no marcas "Recordar", la clave se borra al cerrar el navegador. Márcala solo en tu computador personal: cualquier persona con acceso a este navegador podría usarla. No compartas este archivo con la clave guardada.</div>
+      <button class="btn btn-primary" id="cfg-test">⚡ Probar conexión</button>
+    </div>
+    <div class="form-grid">
+      <div><label class="lbl" for="cfg-model">Modelo</label><input id="cfg-model" list="models-list"><datalist id="models-list">${models.map(m => `<option value="${m}">`).join('')}</datalist><small class="help" style="margin-top:.3rem">gpt-4o-mini es el más económico. Los otros redactan mejor pero cuestan más.</small></div>
+      <div><label class="lbl" for="cfg-pais">País del estudio</label><select id="cfg-pais">${Object.entries(PAISES).map(([c, n]) => `<option value="${c}">${n}</option>`).join('')}</select><small class="help" style="margin-top:.3rem">Se usa para antecedentes nacionales y para la normativa de ética.</small></div>
+      <div class="full"><label class="lbl" for="cfg-budget">Cuánto texto de tus fuentes lee la IA en cada solicitud</label><select id="cfg-budget"><option value="12000">Poco (más barato, ~3.000 tokens)</option><option value="28000">Medio (recomendado, ~7.000 tokens)</option><option value="60000">Mucho (más completo y costoso, ~15.000 tokens)</option></select></div>
+    </div>
+  </div>`;
+}
+function roomFuentes(){
+  return head({icon:'📚', title:'Mis fuentes', desc:'Aquí va la base empírica de tu investigación: artículos, entrevistas, documentos y notas. La IA lee el texto de lo que marques como "Usar con IA".'}) + `
+  <div class="grid2">
+    <div class="card" style="margin:0"><h3>📄 Subir archivos</h3>
+      <div class="drop" id="drop"><div style="font-size:2rem">📥</div><b>Arrastra tus archivos o toca aquí</b><div class="muted">PDF, Word (.docx), texto, transcripciones</div></div>
+      <input type="file" id="file-input" multiple hidden accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.vtt,.srt,image/*">
+    </div>
+    <div class="card" style="margin:0"><h3>📝 Pegar texto o enlace</h3>
+      <div class="stack"><input type="text" id="nt-title" placeholder="Título (ej: Entrevista 1 – aprendiz)"><input type="url" id="nt-url" placeholder="Enlace web (opcional)"><textarea id="nt-text" class="short" placeholder="Pega aquí el texto del artículo o la transcripción…"></textarea><button class="btn btn-primary" id="nt-add">＋ Agregar a mis fuentes</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.3rem">
+    <div class="src-toolbar"><h3 style="margin:0">Fuentes registradas (<span id="src-count">0</span>) <span class="muted" id="src-tokens"></span></h3>
+      <div class="chips" id="src-filter"><button class="chip on" data-f="all">Todas</button><button class="chip" data-f="academic">🎓 Académicas</button><button class="chip" data-f="file">📄 Archivos</button><button class="chip" data-f="text">📝 Textos</button></div></div>
+    <div id="src-grid" class="src-grid"></div>
+    <div style="text-align:right;margin-top:1rem"><button class="btn btn-danger btn-sm" id="src-clear">🗑️ Vaciar todas</button></div>
+  </div>`;
+}
+function searchBox(){
+  return `<div class="card"><h3>🔎 Buscar estudios reales</h3>
+    <p class="muted" style="margin-bottom:.8rem">Consulta OpenAlex, una base académica abierta y gratuita. Cada estudio que agregues queda en tus fuentes con sus datos para la cita APA. Consejo: prueba palabras en español y en inglés.</p>
+    <div class="search-row"><input type="text" id="oa-q" placeholder="Ej: derechos laborales aprendices formación profesional"><select id="oa-scope"><option value="int">Internacional</option><option value="reg">Latinoamérica</option><option value="nac">Nacional</option></select><input type="number" id="oa-year" value="2015" min="1950" max="2030" title="Publicados desde el año"><button class="btn btn-primary" id="oa-go">Buscar</button></div>
+    <div id="oa-results"></div></div>`;
+}
+function roomCronograma(){
+  return head(ROOMS.cronograma) .replace('</div>', '') + `<p>Marca los meses de cada actividad. En lo cualitativo, la recolección y el análisis se cruzan: es normal que se solapen.</p></div>
+  <div class="card">
+    <div class="row-tools"><label class="lbl" style="margin:0">Duración:</label><select id="cr-meses">${[3,4,5,6,7,8,9,10,11,12].map(n => `<option value="${n}">${n} meses</option>`).join('')}</select>
+      <button class="btn btn-soft" id="cr-add">＋ Agregar actividad</button><button class="btn btn-ai" id="cr-ai">✨ Proponer con IA</button></div>
+    <div class="table-wrap"><table class="crono" id="cr-table"></table></div>
+    <div class="field-block" style="margin-top:1.2rem"><label>Notas del cronograma (opcional)</label><textarea class="short" id="cr-notas" placeholder="Hitos, entregas, fechas con el tutor…"></textarea></div>
+  </div>`;
+}
+function roomReferencias(){
+  return head({num:'4.2', icon:'📖', title:'Referencias APA 7', desc:'Lista final de referencias. Se arma desde tus fuentes reales, no desde la imaginación de la IA.'}) + `
+  <div class="card">
+    <div class="tip">💡 El botón "Generar desde mis fuentes" arma la lista en orden alfabético con los datos de cada fuente. Revisa los apellidos: los nombres hispanos con dos apellidos a veces llegan incompletos de las bases de datos.</div>
+    <div class="field-block"><label>Referencias (una por línea)</label><textarea data-key="bibliografia" style="min-height:240px"></textarea>
+      <div class="field-foot"><div class="ai-tools"><button class="btn btn-primary" id="bib-gen">📚 Generar desde mis fuentes</button></div><span class="counter" data-counter="bibliografia"></span></div></div>
+  </div>
+  <div class="card"><h3>✍️ Agregar una referencia a mano</h3>
+    <div class="form-grid"><input type="text" id="apa-autor" placeholder="Autores: Pérez, J., & Gómez, A."><input type="text" id="apa-anio" placeholder="Año: 2024"><input type="text" id="apa-titulo" placeholder="Título de la obra"><input type="text" id="apa-fuente" placeholder="Revista, editorial o sitio"><input type="text" id="apa-url" class="full" placeholder="DOI o URL (opcional)" style="grid-column:1/-1"></div>
+    <button class="btn btn-soft" id="apa-add" style="margin-top:.8rem">＋ Añadir a la lista</button></div>`;
+}
+function roomRevision(){
+  return head({num:'4.3', icon:'🔍', title:'Revisión de coherencia', desc:'Antes de entregar, revisa que todo encaje: pregunta, objetivos, diseño y fuentes.'}) + `
+  <div class="card"><h3>✅ Chequeo automático</h3><p class="muted" style="margin-bottom:.7rem">Se actualiza solo mientras trabajas.</p><ul class="checks" id="checks"></ul></div>
+  <div class="card"><h3>🤖 Revisión de un evaluador (IA)</h3><p class="muted">La IA lee todo tu protocolo como lo haría un jurado y te dice qué no encaja y qué mejorar.</p>
+    <button class="btn btn-ai" id="rev-go" style="margin-top:.8rem">🔍 Revisar mi protocolo completo</button>
+    <div class="review-out" id="review-out" style="display:none"></div></div>`;
+}
+
+/* ---------- Configuración ---------- */
+function fillConfig(){
+  $('#cfg-key').value = getKey();
+  $('#cfg-remember').checked = !!state.settings.remember;
+  $('#cfg-model').value = state.settings.model;
+  $('#cfg-pais').value = state.settings.pais;
+  $('#cfg-budget').value = String(state.settings.budget);
+}
+
+/* ---------- Fuentes ---------- */
+let srcFilter = 'all';
+function renderSources(){
+  const grid = $('#src-grid'); if(!grid) return;
+  const list = sources.slice().sort((a, b) => b.addedAt - a.addedAt).filter(s => srcFilter === 'all' || (srcFilter === 'text' ? (s.kind === 'note' || s.kind === 'link') : s.kind === srcFilter));
+  $('#src-count').textContent = sources.length;
+  const used = sources.filter(s => s.include && s.text);
+  $('#src-tokens').textContent = used.length ? `· ${used.length} con texto para la IA` : '';
+  if(!list.length){ grid.innerHTML = `<div class="empty" style="grid-column:1/-1">🌱 Aún no hay fuentes aquí. Sube archivos, pega textos o busca estudios en 2.1 Antecedentes.</div>`; }
+  else grid.innerHTML = list.map(s => {
+    const kind = {file:'📄 Archivo', academic:'🎓 Académica', note:'📝 Texto', link:'🔗 Web'}[s.kind] || s.kind;
+    const w = words(s.text);
+    return `<div class="src ${s.include ? '' : 'off'}">
+      <div><span class="badge">${kind}</span>${s.scope ? `<span class="badge">${SCOPE[s.scope]}</span>` : ''}${!w ? '<span class="badge amber">sin texto</span>' : ''}</div>
+      <h4>${esc(s.title)}</h4>
+      <div class="meta">${esc(citeKey(s))} · ${w.toLocaleString('es-CO')} palabras</div>
+      ${s.note ? `<div class="note">${esc(s.note)}</div>` : ''}
+      <div class="src-actions"><label class="switch"><input type="checkbox" data-src-inc="${s.id}" ${s.include ? 'checked' : ''}> Usar con IA</label>
+        <button class="btn btn-soft btn-sm" data-src-edit="${s.id}">✏️ Editar</button><button class="btn btn-danger btn-sm" data-src-del="${s.id}" title="Eliminar">✕</button></div></div>`;
+  }).join('');
+  renderChecks();
+}
+let editingId = null;
+function openSourceEditor(id){
+  const s = sources.find(x => x.id === id); if(!s) return;
+  editingId = id;
+  $('#se-title').value = s.title; $('#se-authors').value = authorsToText(s.meta.authors); $('#se-year').value = s.meta.year || '';
+  $('#se-scope').value = s.scope || ''; $('#se-venue').value = s.meta.venue || ''; $('#se-url').value = s.meta.doi || s.meta.url || '';
+  $('#se-text').value = s.text || ''; $('#se-count').textContent = words(s.text).toLocaleString('es-CO') + ' palabras';
+  $('#src-preview').innerHTML = s.preview ? `<img src="${s.preview}" alt="" style="max-width:100%;max-height:260px;border-radius:12px;display:block;margin:0 auto 1rem">` : (s.meta.url ? `<p style="margin-bottom:.8rem"><a href="${esc(s.meta.doi ? 'https://doi.org/' + s.meta.doi : s.meta.url)}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">🌐 Abrir fuente original</a></p>` : '');
+  openModal('m-src');
+}
+async function saveSourceEditor(){
+  const s = sources.find(x => x.id === editingId); if(!s) return;
+  s.title = $('#se-title').value.trim() || s.title;
+  s.meta.authors = textToAuthors($('#se-authors').value);
+  s.meta.year = $('#se-year').value.trim(); s.scope = $('#se-scope').value; s.meta.venue = $('#se-venue').value.trim();
+  const u = $('#se-url').value.trim();
+  if(/^10\.\d{4,}\//.test(u) || /doi\.org\//i.test(u)){ s.meta.doi = u.replace(/^https?:\/\/(dx\.)?doi\.org\//i, ''); s.meta.url = ''; } else { s.meta.url = u; s.meta.doi = ''; }
+  s.text = $('#se-text').value;
+  if(s.text.trim() && /texto|transcripci|Sin resumen|Pega/i.test(s.note || '')) s.note = '';
+  await DB.put(s); closeModal('m-src'); renderSources(); toast('✅ Fuente actualizada');
+}
+
+/* ---------- Cronograma ---------- */
+function renderCrono(){
+  const c = state.cronograma; const t = $('#cr-table'); if(!t) return;
+  $('#cr-meses').value = String(c.meses); $('#cr-notas').value = c.notas || '';
+  let h = `<thead><tr><th class="l" style="width:22%">Fase</th><th class="l">Actividad</th>${Array.from({length:c.meses}, (_, i) => `<th>M${i + 1}</th>`).join('')}<th></th></tr></thead><tbody>`;
+  c.filas.forEach((r, i) => {
+    h += `<tr><td><input type="text" data-cr="${i}" data-crf="fase" value="${esc(r.fase)}"></td><td><input type="text" data-cr="${i}" data-crf="actividad" value="${esc(r.actividad)}"></td>`;
+    for(let m = 1; m <= c.meses; m++) h += `<td class="m"><button class="mcell ${r.meses.includes(m) ? 'on' : ''}" data-crm="${i}" data-m="${m}" aria-label="Mes ${m}"></button></td>`;
+    h += `<td><button class="btn btn-danger btn-sm" data-crdel="${i}" title="Quitar">✕</button></td></tr>`;
+  });
+  t.innerHTML = h + '</tbody>';
+}
+async function cronoAI(btn){
+  const n = state.cronograma.meses;
+  const user = `PROYECTO:\n${projectContext(null, 700)}\n\nTAREA: Propón el cronograma de esta investigación cualitativa para ${n} meses, por fases (inmersión inicial, revisión de literatura, diseño de instrumentos, recolección, análisis recurrente con categorías emergentes, triangulación, informe final). Recolección y análisis deben solaparse. Responde SOLO con JSON con esta forma: {"filas":[{"fase":"texto","actividad":"texto","meses":[1,2]}]} usando números de mes entre 1 y ${n}. Entre 6 y 10 filas.`;
+  await setBusy(btn, true, 'Planeando…');
+  try{
+    const r = await callAI([{role:'system', content:SYSTEM_PROMPT}, {role:'user', content:user}], {json:true, max:1500});
+    const j = JSON.parse(r.text);
+    const filas = (j.filas || []).map(f => ({fase: String(f.fase || ''), actividad: String(f.actividad || ''), meses: (f.meses || []).map(Number).filter(m => m >= 1 && m <= n)}));
+    if(!filas.length) throw new Error('La respuesta no trajo actividades.');
+    if(state.cronograma.filas.length && !confirm('¿Reemplazar las actividades actuales por la propuesta de la IA?')) return;
+    state.cronograma.filas = filas; renderCrono(); scheduleSave(); toast('✅ Cronograma propuesto. Ajústalo a tu gusto.');
+  }catch(e){ if(e.message !== '__nokey') alert('No se pudo completar: ' + e.message); }
+  finally{ setBusy(btn, false); }
+}
+
+/* ---------- Referencias ---------- */
+function buildBibliography(){
+  const list = sources.filter(s => s.include).map(apaRef).sort((a, b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+  if(!list.length){ toast('No hay fuentes marcadas como "Usar con IA"'); return; }
+  pendingKey = 'bibliografia';
+  openResult('bibliografia', list.join('\n'), `${list.length} referencia(s) generada(s) desde tus fuentes.`);
+  $('#ai-title').textContent = '📚 Referencias desde tus fuentes';
+}
+function addManualRef(){
+  const a = $('#apa-autor').value.trim(), y = $('#apa-anio').value.trim() || 's.f.', t = $('#apa-titulo').value.trim().replace(/[.\s]+$/, ''), f = $('#apa-fuente').value.trim(), u = $('#apa-url').value.trim();
+  if(!a || !t){ toast('Escribe al menos el autor y el título'); return; }
+  let ref = `${a} (${y}). ${t}.${f ? ' ' + f + '.' : ''}${u ? ' ' + (/^10\./.test(u) ? 'https://doi.org/' + u : u) : ''}`.replace(/\.\./g, '.');
+  const cur = (state.fields.bibliografia || '').trim();
+  state.fields.bibliografia = cur ? cur + '\n' + ref : ref;
+  document.querySelector('[data-key="bibliografia"]').value = state.fields.bibliografia;
+  ['apa-autor','apa-anio','apa-titulo','apa-fuente','apa-url'].forEach(id => $('#' + id).value = '');
+  updateCounter('bibliografia'); scheduleSave(); toast('✅ Referencia añadida');
+}
+
+/* ---------- Revisión ---------- */
+function renderChecks(){
+  const ul = $('#checks'); if(!ul) return;
+  const items = []; const F = state.fields;
+  const empty = TEXT_KEYS.filter(k => !(F[k] || '').trim()).map(k => FIELD[k].label);
+  items.push(empty.length ? ['w', `Faltan ${empty.length} apartado(s): ${empty.join(', ')}.`] : ['', 'Todos los apartados tienen contenido.']);
+  const ver = TEXT_KEYS.map(k => [k, ((F[k] || '').match(/\[VERIFICAR\]/g) || []).length]).filter(x => x[1]);
+  items.push(ver.length ? ['w', `Hay marcas [VERIFICAR] sin resolver en: ${ver.map(([k, n]) => `${FIELD[k].label} (${n})`).join(', ')}.`] : ['', 'No quedan marcas [VERIFICAR].']);
+  const og = (F.objGeneral || '').trim();
+  if(og && /^\s*[-•]?\s*(determinar|medir|cuantificar|comprobar|demostrar|correlacionar|calcular|probar)\b/i.test(og)) items.push(['w', 'El objetivo general usa un verbo de corte cuantitativo. Prefiere comprender, explorar, describir o interpretar.']);
+  const pq = (F.pregunta || '').trim();
+  if(pq && /^\s*¿\s*(es|son|existe|existen|hay|puede|pueden|cuánt[oa]s?|influye)\b/i.test(pq)) items.push(['w', 'La pregunta central parece cerrada (se responde con sí/no o una cifra). En lo cualitativo conviene empezar con ¿cómo…? o ¿qué significados…?']);
+  ['objEspecificos','metodologia','resumen'].forEach(k => { const f = FIELD[k]; if(f.limit && words(F[k]) > f.limit) items.push(['w', `${f.label} supera el límite de ${f.limit} palabras.`]); });
+  const withText = sources.filter(s => s.include && (s.text || '').trim()).length;
+  items.push(withText ? ['', `${withText} fuente(s) con texto disponibles para la IA.`] : ['w', 'No tienes fuentes con texto: la IA no tendrá en qué apoyarse.']);
+  ['int','reg','nac'].forEach(sc => { const n = sources.filter(s => s.scope === sc).length; if(!n) items.push(['w', `No hay fuentes marcadas como antecedente ${SCOPE[sc].toLowerCase()}.`]); });
+  const nRefs = (F.bibliografia || '').split('\n').filter(l => l.trim()).length;
+  if(sources.length && nRefs < sources.filter(s => s.include).length) items.push(['w', `Tienes ${sources.filter(s => s.include).length} fuentes en uso pero ${nRefs} referencia(s) en la lista. Usa "Generar desde mis fuentes" en 4.2.`]);
+  if(!state.cronograma.filas.some(r => r.actividad && r.meses.length)) items.push(['w', 'El cronograma no tiene actividades con meses marcados.']);
+  ul.innerHTML = items.map(([c, t]) => `<li class="${c}">${c ? '⚠️' : '✅'} ${esc(t)}</li>`).join('');
+}
+function fullProtocol(){
+  return TEXT_KEYS.filter(k => k !== 'bibliografia').map(k => `### ${FIELD[k].label}\n${(state.fields[k] || '').trim() || '(vacío)'}`).join('\n\n') +
+    `\n\n### Cronograma\n${state.cronograma.filas.map(r => `- ${r.fase}: ${r.actividad} (meses ${r.meses.join(', ')})`).join('\n')}\n\n### Referencias\n${state.fields.bibliografia || '(vacío)'}`;
+}
+async function review(btn){
+  const user = `Actúa como jurado evaluador de un protocolo de investigación cualitativa (enfoque Hernández-Sampieri). Revisa el siguiente protocolo y entrega, en texto plano con guiones:
+1. Fortalezas (2 a 4).
+2. Incoherencias entre título, pregunta, objetivos y diseño metodológico, citando la sección.
+3. Apartados débiles, vacíos o demasiado generales.
+4. Afirmaciones que parecen necesitar una cita y no la tienen.
+5. Citas en el texto que no aparecen en la lista de referencias, o al revés.
+6. Recomendaciones concretas, ordenadas de la más a la menos importante.
+Sé específico y honesto; no reescribas el protocolo.
+
+PROTOCOLO:
+${cut(fullProtocol(), 60000)}`;
+  await setBusy(btn, true, 'Revisando…');
+  try{
+    const r = await callAI([{role:'system', content:'Eres un evaluador experto en investigación cualitativa. Responde en español, en texto plano, sin asteriscos ni #.'}, {role:'user', content:user}], {max:2500});
+    state.review = r.text; const out = $('#review-out'); out.textContent = r.text; out.style.display = 'block'; scheduleSave();
+  }catch(e){ if(e.message !== '__nokey') alert('No se pudo completar: ' + e.message); }
+  finally{ setBusy(btn, false); }
+}
+
+/* ---------- Progreso ---------- */
+function roomDone(id){
+  if(id === 'cronograma') return state.cronograma.filas.some(r => r.actividad && r.meses.length);
+  if(id === 'revision') return !!state.review;
+  if(id === 'referencias') return (state.fields.bibliografia || '').trim().length > 10;
+  const r = ROOMS[id]; if(!r.fields) return false;
+  return r.fields.every(f => (state.fields[f.key] || '').trim().length > 10);
+}
+function updateProgress(){
+  const ids = Object.keys(ROOMS).filter(id => ROOMS[id].num && id !== 'revision');
+  const done = ids.filter(roomDone).length;
+  const pct = Math.round(done / ids.length * 100);
+  $('#p-bar').style.width = pct + '%'; $('#p-text').textContent = pct + '%';
+  Object.keys(ROOMS).forEach(id => { const d = document.querySelector(`[data-dot="${id}"]`); if(d) d.classList.toggle('ok', roomDone(id)); });
+  const sg = $('#status-grid');
+  if(sg) sg.innerHTML = Object.keys(ROOMS).filter(id => ROOMS[id].num).map(id => `<div class="status-item" data-go="${id}"><span class="ic">${roomDone(id) ? '✅' : '⚪'}</span>${ROOMS[id].num} ${ROOMS[id].title}</div>`).join('');
+  renderChecks();
+}
+function updateCounter(k){
+  const el = document.querySelector(`[data-counter="${k}"]`); if(!el) return;
+  const n = words(state.fields[k]); const lim = FIELD[k]?.limit;
+  if(k === 'bibliografia'){ el.textContent = (state.fields[k] || '').split('\n').filter(l => l.trim()).length + ' referencias'; return; }
+  el.textContent = lim ? `${n.toLocaleString('es-CO')} / ${lim.toLocaleString('es-CO')} palabras` : `${n.toLocaleString('es-CO')} palabras`;
+  el.classList.toggle('over', !!lim && n > lim);
+}
+
+/* =========================================================
+   Documento final, exportación y versiones
+   ========================================================= */
+function paras(t){
+  t = (t || '').trim();
+  if(!t) return '<p class="vacio">Pendiente por redactar.</p>';
+  return esc(t).split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>').replace(/\[VERIFICAR\]/g, '<span class="verif">[VERIFICAR]</span>')}</p>`).join('');
+}
+function buildDoc(){
+  const F = state.fields; const c = state.cronograma;
+  const title = (F.titulo || '').split('\n').map(l => l.trim()).find(Boolean) || 'Protocolo de investigación cualitativa';
+  const sec = (num, t, body) => `<h2>${num} ${t}</h2>${body}`;
+  const crono = `<table><thead><tr><th class="l">Fase</th><th class="l">Actividad</th>${Array.from({length:c.meses}, (_, i) => `<th>M${i + 1}</th>`).join('')}</tr></thead><tbody>${c.filas.map(r => `<tr><td class="l">${esc(r.fase)}</td><td class="l">${esc(r.actividad)}</td>${Array.from({length:c.meses}, (_, i) => `<td class="${r.meses.includes(i + 1) ? 'x' : ''}">${r.meses.includes(i + 1) ? '■' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table>${c.notas ? paras(c.notas) : ''}`;
+  const refs = (F.bibliografia || '').split('\n').map(l => l.trim()).filter(Boolean);
+  return `<h1>${esc(title.replace(/^\d+[.)]\s*/, ''))}</h1>
+    <h2>Resumen</h2>${paras(F.resumen)}
+    ${sec('1.', 'Fundamentación', '')}
+    <h3>1.1 Planteamiento del problema</h3>${paras(F.planteamiento)}
+    <h3>1.2 Pregunta de investigación</h3>${paras(F.pregunta)}
+    <h3>1.3 Justificación y viabilidad</h3>${paras(F.justificacion)}
+    ${sec('2.', 'Referentes', '')}
+    <h3>2.1 Antecedentes internacionales</h3>${paras(F.antecedentesInt)}
+    <h3>2.2 Antecedentes latinoamericanos</h3>${paras(F.antecedentesReg)}
+    <h3>2.3 Antecedentes nacionales</h3>${paras(F.antecedentesNac)}
+    <h3>2.4 Referente conceptual</h3>${paras(F.referente)}
+    ${sec('3.', 'Diseño de la investigación', '')}
+    <h3>3.1 Objetivo general</h3>${paras(F.objGeneral)}
+    <h3>3.2 Objetivos específicos</h3>${paras(F.objEspecificos)}
+    <h3>3.3 Metodología</h3>${paras(F.metodologia)}
+    <h3>3.4 Cronograma</h3>${crono}
+    <h3>3.5 Consideraciones éticas</h3>${paras(F.etica)}
+    <h3>3.6 Criterios de rigor</h3>${paras(F.rigor)}
+    <h3>3.7 Recursos y presupuesto</h3>${paras(F.recursos)}
+    <h2>Referencias</h2>${refs.length ? refs.map(r => `<p class="ref">${esc(r)}</p>`).join('') : '<p class="vacio">Sin referencias.</p>'}`;
+}
+function openPreview(){
+  $('#doc').innerHTML = buildDoc();
+  const v = TEXT_KEYS.reduce((n, k) => n + ((state.fields[k] || '').match(/\[VERIFICAR\]/g) || []).length, 0);
+  const tip = $('#pv-tip');
+  if(v){ tip.style.display = 'block'; tip.innerHTML = `⚠️ El documento aún tiene ${v} marca(s) <b>[VERIFICAR]</b> resaltadas en amarillo. Resuélvelas antes de entregar.`; } else tip.style.display = 'none';
+  openModal('m-preview');
+}
+function exportWord(){
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(slug(state.fields.titulo))}</title>
+  <style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:2}h1{font-size:14pt;text-align:center;text-transform:uppercase}h2{font-size:12pt;font-weight:bold;margin-top:18pt}h3{font-size:12pt;font-weight:bold;font-style:italic}p{text-align:justify;text-indent:1.27cm;margin:0 0 6pt}p.ref{text-indent:-1.27cm;margin-left:1.27cm;text-align:left}table{border-collapse:collapse;width:100%;font-size:9pt;line-height:1.2}th,td{border:1px solid #777;padding:2pt 4pt;text-align:center}td.l,th.l{text-align:left}td.x{background:#7fbf97}.verif{background:yellow}.vacio{color:#888;font-style:italic}</style></head><body>${buildDoc()}</body></html>`;
+  download(slug(state.fields.titulo) + '.doc', new Blob(['\ufeff', html], {type:'application/msword'}));
+  toast('📝 Documento Word descargado');
+}
+function exportJSON(){
+  const data = {app:'InvestigApp', version:4, exportado:new Date().toISOString(), estado:{...state}, fuentes: sources.map(s => { const c = {...s}; delete c.preview; return c; })};
+  download('Respaldo_' + slug(state.fields.titulo) + '.json', new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+  toast('⬇️ Respaldo descargado (incluye el texto de tus fuentes)');
+}
+async function importJSON(file){
+  try{
+    const d = JSON.parse(await file.text());
+    if(d.app === 'InvestigApp' && d.estado){
+      if(!confirm('Importar reemplazará tu protocolo actual (se guardará una versión de respaldo antes). ¿Continuar?')) return;
+      saveSnapshot('Antes de importar');
+      state = {...defaultState(), ...d.estado, settings:{...state.settings, ...(d.estado.settings || {})}};
+      if(Array.isArray(d.fuentes)) for(const s of d.fuentes){ if(!sources.some(x => x.id === s.id)){ await DB.put(s); sources.push(s); } }
+    } else {
+      // Formato de la versión anterior
+      if(!confirm('Este archivo es de la versión anterior. ¿Importar sus textos?')) return;
+      saveSnapshot('Antes de importar');
+      TEXT_KEYS.forEach(k => { if(d[k]) state.fields[k] = d[k]; });
+      if(d.cronograma) state.cronograma.notas = d.cronograma;
+    }
+    saveNow(); renderMain(); updateProgress(); toast('⬆️ Proyecto importado');
+  }catch(e){ alert('No se pudo leer el archivo: ' + e.message); }
+}
+function getSnaps(){ try{ return JSON.parse(localStorage.getItem(LS_SNAP) || '[]'); }catch(e){ return []; } }
+function saveSnapshot(name){
+  const snaps = getSnaps();
+  snaps.unshift({id:uid(), ts:new Date().toISOString(), name: name || '', state: JSON.parse(JSON.stringify(state))});
+  try{ localStorage.setItem(LS_SNAP, JSON.stringify(snaps.slice(0, 15))); }catch(e){ toast('No hay espacio para más versiones. Elimina alguna.'); }
+}
+function renderSnaps(){
+  const s = getSnaps();
+  $('#snap-list').innerHTML = s.length ? s.map(x => `<div class="snap"><div><b>${esc(x.name || 'Versión sin nombre')}</b><div class="muted">${new Date(x.ts).toLocaleString('es-CO')} · ${words(Object.values(x.state.fields || {}).join(' ')).toLocaleString('es-CO')} palabras</div></div>
+    <div style="display:flex;gap:.4rem"><button class="btn btn-soft btn-sm" data-snap-restore="${x.id}">↩️ Restaurar</button><button class="btn btn-danger btn-sm" data-snap-del="${x.id}">✕</button></div></div>`).join('') : '<div class="empty">Aún no has guardado versiones.</div>';
+}
+
+/* =========================================================
+   Navegación y eventos
+   ========================================================= */
+function showRoom(id){
+  $$('.room').forEach(r => r.classList.toggle('active', r.id === 'room-' + id));
+  $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.room === id));
+  $('#main').scrollTop = 0; window.scrollTo(0, 0);
+  $('#sidebar').classList.remove('open'); $('#scrim').classList.remove('show');
+  try{ sessionStorage.setItem('InvestigApp_v4_sala', id); }catch(e){}
+  if(id === 'antecedentes' && !$('#oa-q').value) $('#oa-q').value = ((state.fields.titulo || '').split('\n')[0] || '').replace(/^\d+[.)]\s*/, '').slice(0, 90);
+}
+
+function bindEvents(){
+  $('#sidebar').addEventListener('click', e => { const b = e.target.closest('[data-room]'); if(b) showRoom(b.dataset.room); });
+  $('#menu-toggle').onclick = () => { $('#sidebar').classList.toggle('open'); $('#scrim').classList.toggle('show'); };
+  $('#scrim').onclick = () => { $('#sidebar').classList.remove('open'); $('#scrim').classList.remove('show'); };
+
+  const main = $('#main');
+  main.addEventListener('input', e => {
+    const t = e.target;
+    if(t.dataset.key){ state.fields[t.dataset.key] = t.value; updateCounter(t.dataset.key); scheduleSave(); }
+    else if(t.dataset.cr !== undefined){ state.cronograma.filas[+t.dataset.cr][t.dataset.crf] = t.value; scheduleSave(); }
+    else if(t.id === 'cr-notas'){ state.cronograma.notas = t.value; scheduleSave(); }
+    else if(t.id === 'cfg-key'){ setKey(t.value); }
+    else if(t.id === 'cfg-model'){ state.settings.model = t.value.trim() || 'gpt-4o-mini'; scheduleSave(); }
+  });
+  main.addEventListener('change', async e => {
+    const t = e.target;
+    if(t.id === 'cfg-remember'){ state.settings.remember = t.checked; setKey($('#cfg-key').value); scheduleSave(); toast(t.checked ? '🔑 La clave se recordará en este equipo' : '🔒 La clave se borrará al cerrar el navegador'); }
+    else if(t.id === 'cfg-pais'){ state.settings.pais = t.value; scheduleSave(); }
+    else if(t.id === 'cfg-budget'){ state.settings.budget = +t.value; scheduleSave(); }
+    else if(t.id === 'cr-meses'){ const n = +t.value; state.cronograma.meses = n; state.cronograma.filas.forEach(r => r.meses = r.meses.filter(m => m <= n)); renderCrono(); scheduleSave(); }
+    else if(t.dataset.srcInc){ const s = sources.find(x => x.id === t.dataset.srcInc); if(s){ s.include = t.checked; await DB.put(s); renderSources(); } }
+    else if(t.id === 'file-input'){ await handleFiles(t.files); t.value = ''; }
+  });
+  main.addEventListener('click', async e => {
+    const t = e.target.closest('button,[data-go],.drop'); if(!t) return;
+    if(t.dataset.go){ showRoom(t.dataset.go); return; }
+    if(t.dataset.act === 'gen') return aiGenerate(t.dataset.key, t);
+    if(t.dataset.act === 'improve' || t.dataset.act === 'shorten') return aiRewrite(t.dataset.key, t.dataset.act, t);
+    if(t.id === 'drop') return $('#file-input').click();
+    if(t.id === 'cfg-show'){ const k = $('#cfg-key'); k.type = k.type === 'password' ? 'text' : 'password'; return; }
+    if(t.id === 'cfg-test') return testConnection(t);
+    if(t.id === 'nt-add') return addTextSource();
+    if(t.dataset.f){ srcFilter = t.dataset.f; $$('#src-filter .chip').forEach(c => c.classList.toggle('on', c === t)); return renderSources(); }
+    if(t.dataset.srcEdit) return openSourceEditor(t.dataset.srcEdit);
+    if(t.dataset.srcDel){ if(confirm('¿Eliminar esta fuente?')){ await DB.del(t.dataset.srcDel); sources = sources.filter(s => s.id !== t.dataset.srcDel); renderSources(); } return; }
+    if(t.id === 'src-clear'){ if(sources.length && confirm('¿Eliminar TODAS tus fuentes? Esta acción no se puede deshacer.')){ await DB.clear(); sources = []; renderSources(); toast('🗑️ Fuentes eliminadas'); } return; }
+    if(t.id === 'oa-go') return oaSearch(t);
+    if(t.dataset.oaAdd) return oaAdd(t.dataset.oaAdd, t.dataset.scope, t);
+    if(t.id === 'cr-add'){ state.cronograma.filas.push({fase:'', actividad:'', meses:[]}); renderCrono(); scheduleSave(); return; }
+    if(t.dataset.crdel !== undefined){ state.cronograma.filas.splice(+t.dataset.crdel, 1); renderCrono(); scheduleSave(); return; }
+    if(t.dataset.crm !== undefined){ const r = state.cronograma.filas[+t.dataset.crm]; const m = +t.dataset.m; r.meses = r.meses.includes(m) ? r.meses.filter(x => x !== m) : [...r.meses, m].sort((a, b) => a - b); t.classList.toggle('on'); scheduleSave(); return; }
+    if(t.id === 'cr-ai') return cronoAI(t);
+    if(t.id === 'bib-gen') return buildBibliography();
+    if(t.id === 'apa-add') return addManualRef();
+    if(t.id === 'rev-go') return review(t);
+  });
+  main.addEventListener('keydown', e => { if(e.target.id === 'oa-q' && e.key === 'Enter') oaSearch($('#oa-go')); });
+  ['dragenter','dragover'].forEach(ev => main.addEventListener(ev, e => { const d = e.target.closest('.drop'); if(d){ e.preventDefault(); d.classList.add('over'); } }));
+  ['dragleave','drop'].forEach(ev => main.addEventListener(ev, e => { const d = e.target.closest('.drop'); if(d){ e.preventDefault(); d.classList.remove('over'); if(ev === 'drop' && e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files); } }));
+
+  // Modales
+  document.addEventListener('click', e => { const c = e.target.closest('[data-close]'); if(c) closeModal(c.dataset.close); });
+  $$('.modal').forEach(m => m.addEventListener('mousedown', e => { if(e.target === m) m.classList.remove('active'); }));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') $$('.modal.active').forEach(m => m.classList.remove('active')); });
+  $('#ai-replace').onclick = () => applyResult('replace');
+  $('#ai-append').onclick = () => applyResult('append');
+  $('#ai-copy').onclick = async () => { try{ await navigator.clipboard.writeText($('#ai-result').value); toast('📋 Copiado'); }catch(e){ $('#ai-result').select(); document.execCommand('copy'); toast('📋 Copiado'); } };
+  $('#se-save').onclick = saveSourceEditor;
+  $('#se-text').oninput = () => { $('#se-count').textContent = words($('#se-text').value).toLocaleString('es-CO') + ' palabras'; };
+
+  // Encabezado
+  $('#btn-preview').onclick = openPreview;
+  $('#pv-word').onclick = exportWord;
+  $('#btn-snaps').onclick = () => { renderSnaps(); openModal('m-snaps'); };
+  $('#snap-save').onclick = () => { saveSnapshot($('#snap-name').value.trim()); $('#snap-name').value = ''; renderSnaps(); toast('🕘 Versión guardada'); };
+  $('#snap-list').onclick = e => {
+    const r = e.target.closest('[data-snap-restore]'), d = e.target.closest('[data-snap-del]');
+    if(r){ const s = getSnaps().find(x => x.id === r.dataset.snapRestore); if(s && confirm('¿Volver a esta versión? Tu estado actual se guardará como versión antes de restaurar.')){ saveSnapshot('Antes de restaurar'); state = {...defaultState(), ...s.state, settings: state.settings}; saveNow(); renderMain(); updateProgress(); closeModal('m-snaps'); toast('↩️ Versión restaurada'); } }
+    if(d){ localStorage.setItem(LS_SNAP, JSON.stringify(getSnaps().filter(x => x.id !== d.dataset.snapDel))); renderSnaps(); }
+  };
+  $('#btn-dd').onclick = e => { e.stopPropagation(); $('#dd-file').classList.toggle('open'); };
+  document.addEventListener('click', () => $('#dd-file').classList.remove('open'));
+  $('#dd-file .dropdown-menu').onclick = e => {
+    const b = e.target.closest('[data-file]'); if(!b) return;
+    const a = b.dataset.file;
+    if(a === 'word') exportWord();
+    if(a === 'print'){ openPreview(); setTimeout(() => window.print(), 300); }
+    if(a === 'json') exportJSON();
+    if(a === 'import') $('#import-input').click();
+  };
+  $('#import-input').onchange = e => { if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value = ''; };
+  window.addEventListener('beforeunload', () => { clearTimeout(saveTimer); saveNow(); });
+}
+
+async function testConnection(btn){
+  const key = getKey(); if(!key){ toast('Escribe primero tu API Key'); return; }
+  await setBusy(btn, true, 'Probando…');
+  try{
+    const r = await fetch('https://api.openai.com/v1/models', {headers:{Authorization:'Bearer ' + key}});
+    if(r.ok) toast('✅ ¡Conexión con OpenAI exitosa!');
+    else if(r.status === 401) alert('La API Key no es válida.');
+    else alert('OpenAI respondió con error ' + r.status + '.');
+  }catch(e){ alert('No hay conexión con OpenAI. Revisa tu internet.'); }
+  finally{ setBusy(btn, false); }
+}
+async function addTextSource(){
+  const title = $('#nt-title').value.trim(), url = $('#nt-url').value.trim(), text = $('#nt-text').value.trim();
+  if(!title && !url){ toast('Escribe al menos un título o un enlace'); return; }
+  const s = newSource(url && !text ? 'link' : 'note', title || url, text);
+  s.meta.url = url;
+  if(!text) s.note = 'Sin texto: la IA no puede leer páginas web directamente. Pega el contenido en "Editar".';
+  await DB.put(s); sources.push(s);
+  ['nt-title','nt-url','nt-text'].forEach(id => $('#' + id).value = '');
+  renderSources(); toast('✅ Fuente agregada');
+}
+
+/* =========================================================
+   Inicio
+   ========================================================= */
+(async function init(){
+  const first = loadState();
+  try{ await DB.open(); sources = await DB.all(); }catch(e){ toast('⚠️ Este navegador no permite guardar archivos (modo privado).'); }
+  if(first) await migrateOld();
+  try{ sources = await DB.all(); }catch(e){}
+  renderSidebar(); renderMain(); bindEvents(); updateProgress();
+  let last = 'inicio'; try{ last = sessionStorage.getItem('InvestigApp_v4_sala') || 'inicio'; }catch(e){}
+  showRoom(ROOMS[last] ? last : 'inicio');
+})();
+</script>
+</body>
+</html>
